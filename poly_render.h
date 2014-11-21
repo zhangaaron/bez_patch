@@ -13,14 +13,27 @@
 #include <GL/glu.h>
 
 using namespace std;
+using namespace Eigen;
 
-class Triangle {
+class Shape {
 	public:
-		int vert1[3];
-		int vert2[3];
-		int vert3[3];
+		int numVerticies;
+		//virtual Vector3f *getVerts();
+	private:
+};
+class Triangle: public Shape {
+	public:
+		int numVerticies;
+		Vector3f verts[3];
+	private:
+
+};
+class Quad: public Shape {
+	public:
+		int numVerticies;
+		Vector3f verts[4];
 	private:
 
 };
 void display();
-void run_glut(vector<Triangle> poly_list, int *argcp, char **argv);
+void run_glut(Shape *shape_list, int list_size, int MODE, int *argcp, char **argv);

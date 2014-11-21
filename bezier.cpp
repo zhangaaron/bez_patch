@@ -9,6 +9,41 @@ bPatch::bPatch(Vector3f *patch_pts) {
 		ctrl_pts[ i / 4][ i % 4] = patch_pts[i];
 	}
 }
+//FOR NOW WITHOUT NORMALS STORED. 
+struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *d_array) {
+	int num_divisions = (int)floor(1 / sub_size);
+	// for each parametric value of u
+	for (int i = 0; i < num_divisions + 1; i++) {
+		float u = i * sub_size;
+		//for each parametric value of v:
+		for (int j = 0; j < num_divisions + 1; j++) {
+			float v = j * sub_size;
+
+			//evaluate surface value and normal
+			struct deriv_point p_n;
+			d_array[i + j * (num_divisions + 1)] = *p_interp(u, v, &p_n); 
+		}
+	}
+
+}
+
+//FOR NOW WITHOUT NORMALS STORED. 
+struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *d_array) {
+	int num_divisions = (int)floor(1 / sub_size);
+	// for each parametric value of u
+	for (int i = 0; i < num_divisions + 1; i++) {
+		float u = i * sub_size;
+		//for each parametric value of v:
+		for (int j = 0; j < num_divisions + 1; j++) {
+			float v = j * sub_size;
+
+			//evaluate surface value and normal
+			struct deriv_point p_n;
+			d_array[i + j * (num_divisions + 1)] = *p_interp(u, v, &p_n); 
+		}
+	}
+
+}
 
 struct deriv_point *bPatch::p_interp(float u, float v, deriv_point *p_n) {
 	assert (u >= 0.0 && u <= 1.0);
@@ -38,7 +73,9 @@ struct deriv_point *bPatch::p_interp(float u, float v, deriv_point *p_n) {
 	bCurve(v_points).c_interp(v, &d_p_v);
 	bCurve(u_points).c_interp(u, &d_p_u);
 	//They should match within some reasonable value. 
-	assert (d_p_u.p == d_p_v.p);
+	assert (abs(d_p_v.p[0] - d_p_u.p[0]) < 0.001);
+	assert (abs(d_p_v.p[1] - d_p_u.p[1]) < 0.001);
+	assert (abs(d_p_v.p[2] - d_p_u.p[2]) < 0.001);
 	//take cross of partials to get normal 
 	Vector3f normal = d_p_v.deriv.cross(d_p_v.deriv);
 	normal = normal.normalized(); 

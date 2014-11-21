@@ -30,7 +30,7 @@ void parse_file(char * file_name, vector<bPatch> *patch_list){
 		if (strlen(line) > 2) {
 		char *value = strtok(line, " ");
 			while (value){
-				printf("at %s \n", value);
+				// printf("at %s \n", value);
 				float_list.push_back(atof(value));
 				value = strtok(NULL, " ");
 			}

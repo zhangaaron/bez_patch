@@ -9,6 +9,7 @@
 #include "poly_render.h"
 
 using namespace std;
+using namespace Eigen;
 
 float zoom = 15.0f;
 float rotx = 0;
@@ -54,12 +55,14 @@ void displayTest()
 		glVertex3f(0, 1, 0);
 	glEnd();
 
-	glBegin(GL_LINE_LOOP);
+	glBegin(GL_QUADS);
 		glVertex3f(0, 0, 0);
 		glVertex3f(0, 0, 1);
 		glVertex3f(0, 1, 1);
 		glVertex3f(0, 1, 0);
 	glEnd();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	glutWireTeapot(1.0);
 
 	glutSwapBuffers();
@@ -92,7 +95,6 @@ void display()
 		glVertex3f(0, 1, 1);
 		glVertex3f(0, 1, 0);
 	glEnd();
-	glutWireTeapot(1.0);
 
 	glutSwapBuffers();
 }
@@ -165,15 +167,15 @@ void Mouse(int b,int s,int x,int y)
 	}
 	glutPostRedisplay();
 }
-void run_glut(vector<Triangle> poly_list, int *argcp, char **argv){
+void run_glut(Shape *shape_list, int list_size, int MODE, int *argcp, char **argv){
 	glutInit(argcp,argv);
 	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
 	glutInitWindowSize(640,480);
 	glutInitWindowPosition(100,100);
-	glutCreateWindow("Maya Camera");
+	glutCreateWindow("basicBezier v4.20");
 
 
-	glutDisplayFunc(display);
+	glutDisplayFunc(displayTest);
 	glutReshapeFunc(reshape);
 	glutMouseFunc(Mouse);
 	glutMotionFunc(Motion);

@@ -26,7 +26,7 @@ class bPatch {
 		Vector3f ctrl_pts[4][4];
 		bPatch(Vector3f *patch_pts);
 		// to_String(); //for debug
-		Vector3f *subdivide_patch(float step_size, Vector3f v_arr);
+		struct deriv_point *subdivide_patch(float sub_size, struct deriv_point *d_array);
 		struct deriv_point *p_interp(float u, float v, deriv_point *p_n);
 	private:
 
