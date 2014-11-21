@@ -22,9 +22,9 @@ int main(int argc, char *argv[]) {
 	int num = (int) num_steps; //for array indexing
 	int numsq = num * num;
 	subdivision_size = 1 / num_steps; //so we get subdivision size.
-
 	vector<bPatch> *patch_list = new vector<bPatch>();
 	parse_file(argv[1], patch_list);
+	printf("subdivision size: %f, number of patches: %d\n", subdivision_size, patch_list->size());
 	if (MODE) { //Do adapative tesselation
 		// for(int i = 0; i < patch_list->size(); i++) {
 		// 	patch_list->at(i).subdivide_patch(subdivision_size, v_array + num * num * i);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 		int patch_count = patch_list->size();
 		Quad *quad_list = (Quad *)malloc(sizeof(Quad) *  patch_count * numsq); 
 		for(int i = 0; i < patch_count; i++) {
-			struct deriv_point patch_pts[numsq];
+			struct deriv_point patch_pts[numsq + 2 * num ]; //fill up a numsq size array of 
 			patch_list->at(i).subdivide_patch(subdivision_size, patch_pts);
 			for (int j = 0; j < numsq ; j++) {
 				Quad *quad_base_ptr = quad_list + i * numsq;

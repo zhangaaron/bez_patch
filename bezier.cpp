@@ -11,6 +11,7 @@ bPatch::bPatch(Vector3f *patch_pts) {
 }
 //FOR NOW WITHOUT NORMALS STORED. 
 struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *d_array) {
+	printf("func subdivide_patch\n");
 	int num_divisions = (int)floor(1 / sub_size);
 	// for each parametric value of u
 	for (int i = 0; i < num_divisions + 1; i++) {
@@ -27,25 +28,26 @@ struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *
 
 }
 
-//FOR NOW WITHOUT NORMALS STORED. 
-struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *d_array) {
-	int num_divisions = (int)floor(1 / sub_size);
-	// for each parametric value of u
-	for (int i = 0; i < num_divisions + 1; i++) {
-		float u = i * sub_size;
-		//for each parametric value of v:
-		for (int j = 0; j < num_divisions + 1; j++) {
-			float v = j * sub_size;
+// //FOR NOW WITHOUT NORMALS STORED. 
+// struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *d_array) {
+// 	int num_divisions = (int)floor(1 / sub_size);
+// 	// for each parametric value of u
+// 	for (int i = 0; i < num_divisions + 1; i++) {
+// 		float u = i * sub_size;
+// 		//for each parametric value of v:
+// 		for (int j = 0; j < num_divisions + 1; j++) {
+// 			float v = j * sub_size;
 
-			//evaluate surface value and normal
-			struct deriv_point p_n;
-			d_array[i + j * (num_divisions + 1)] = *p_interp(u, v, &p_n); 
-		}
-	}
+// 			//evaluate surface value and normal
+// 			struct deriv_point p_n;
+// 			d_array[i + j * (num_divisions + 1)] = *p_interp(u, v, &p_n); 
+// 		}
+// 	}
 
-}
+// }
 
 struct deriv_point *bPatch::p_interp(float u, float v, deriv_point *p_n) {
+	printf("func p_interp\n");
 	assert (u >= 0.0 && u <= 1.0);
 	assert (v >= 0.0 && v <= 1.0);
 	//Build control points for a bez_curve along V. HARDCODED FOR NOW. MAYBE LOOP IS BETTER
