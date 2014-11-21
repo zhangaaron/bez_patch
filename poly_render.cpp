@@ -26,6 +26,45 @@ void Init()
 {
 	glEnable(GL_DEPTH_TEST);
 }
+void displayTest()
+{
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	
+	glLoadIdentity();
+
+	glTranslatef(0,0,-zoom);
+	glTranslatef(tx,ty,0);
+	glRotatef(rotx,1,0,0);
+	glRotatef(roty,0,1,0);	
+
+	// draw grid
+	glBegin(GL_LINES);
+	for(int i=-10;i<=10;++i) {
+		glVertex3f(i,0,-10);
+		glVertex3f(i,0,10);
+
+		glVertex3f(10,0,i);
+		glVertex3f(-10,0,i);
+	}
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0, 1);
+		glVertex3f(0, 1, 1);
+		glVertex3f(0, 1, 0);
+	glEnd();
+
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0, 1);
+		glVertex3f(0, 1, 1);
+		glVertex3f(0, 1, 0);
+	glEnd();
+	glutWireTeapot(1.0);
+
+	glutSwapBuffers();
+}
+
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -46,6 +85,12 @@ void display()
 		glVertex3f(10,0,i);
 		glVertex3f(-10,0,i);
 	}
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0, 1);
+		glVertex3f(0, 1, 1);
+		glVertex3f(0, 1, 0);
 	glEnd();
 	glutWireTeapot(1.0);
 
