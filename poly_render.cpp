@@ -178,37 +178,6 @@ void run_glut(vector<Quad> *quad_list, int list_size, int MODE, int *argcp, char
 
 }
 
-Triangle::Triangle(struct deriv_point_adaptive *a, struct deriv_point_adaptive *b, struct deriv_point_adaptive *c) {
-	this->a = *a;
-	this->b = *b;
-	this->c = *c;
-}
-/*Not sure if the linearly interpolated deriv means anything but it is never used*/
-Triangle::get_midpoint(int edge, struct deriv_point_adaptive *fill); {
-	switch (edge) {
-		case 1:
-			fill->u = (a.u + c.u) / 2;
-			fill->v = (a.v + c.v) / 2;
-			fill->deriv = (a.deriv + c.deriv) / 2
-			fill->p = (a.p + c.p) / 2;
-			break;
-		case 2:
-			fill->u = (a.u + b.u) / 2;
-			fill->v = (a.v + b.v) / 2;
-			fill->deriv = (a.deriv + b.deriv) / 2
-			fill->p = (a.p + b.p) / 2;
-			break;
-		case 3:
-			fill->u = (c.u + b.u) / 2;
-			fill->v = (c.v + b.v) / 2;
-			fill->deriv = (c.deriv + b.deriv) / 2
-			fill->p = (c.p + b.p) /2;
-			break;
-		default: 
-			printf("invalid edge asked for in get_midpoint: %d\n", edge);
-			exit(0);
-	}
-}
 
 Quad::Quad(struct deriv_point *a, struct deriv_point *b, struct deriv_point *c, struct deriv_point *d) {
 	this->a = *a;

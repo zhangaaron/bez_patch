@@ -24,22 +24,7 @@ class Shape {
 	private:
 };
 
-/*POINTS STORED AND LISTED COUNTERCLOCKWISE
 
-		C.
-	e1	/ \ e3
-	   /   \   shitty ascii triangle by yours truly
-	 A._e2__\.B
-*/
-class Triangle: public Shape {
-	public:
-		int numVerticies;
-		struct deriv_point_adaptive a, b, c;
-		Triangle(struct deriv_point_adaptive *a, struct deriv_point_adaptive *b, struct deriv_point_adaptive *c);
-		get_midpoint(int edge, struct deriv_point_adaptive *fill);
-	private:
-
-};
 /* PATENT PENDING POLYGON
 		  b-> c 
 		  ^   |

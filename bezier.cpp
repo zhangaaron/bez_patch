@@ -5,6 +5,39 @@ using namespace Eigen;
 
 IOFormat CommaInitFmt(StreamPrecision, DontAlignCols, ", ", ", ", "", "", " << ", ";");
 
+
+Triangle::Triangle(struct deriv_point_adaptive a, struct deriv_point_adaptive b, struct deriv_point_adaptive c) {
+	this->a = a;
+	this->b = b;
+	this->c = c;
+}
+/*Not sure if the linearly interpolated deriv means anything but it is never used*/
+void Triangle::get_midpoint(int edge, struct deriv_point_adaptive *fill) {
+	switch (edge) {
+		case 1:
+			fill->u = (a.u + c.u) / 2;
+			fill->v = (a.v + c.v) / 2;
+			fill->deriv = (a.deriv + c.deriv) / 2;
+			fill->p = (a.p + c.p) / 2;
+			break;
+		case 2:
+			fill->u = (a.u + b.u) / 2;
+			fill->v = (a.v + b.v) / 2;
+			fill->deriv = (a.deriv + b.deriv) / 2;
+			fill->p = (a.p + b.p) / 2;
+			break;
+		case 3:
+			fill->u = (c.u + b.u) / 2;
+			fill->v = (c.v + b.v) / 2;
+			fill->deriv = (c.deriv + b.deriv) / 2;
+			fill->p = (c.p + b.p) /2;
+			break;
+		default: 
+			printf("invalid edge asked for in get_midpoint: %d\n", edge);
+			exit(0);
+	}
+}
+
 bPatch::bPatch(vector<Vector3f> input_pts) {
 	assert (input_pts.size() == 16);
 	this->ctrl_pts = input_pts;
@@ -46,10 +79,10 @@ struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *
 }
 
 //Don't know how large this is so use a vector
-vector<Triangle> *bPatch::adaptive_subdivide(float sub_size, struct deriv_point *d_array) {
+vector<Triangle> *bPatch::adaptive_subdivide(float sub_size, float eps, struct deriv_point *d_array) {
 	struct deriv_point m[4];
 	subdivide_patch(1.0, m);
-	struct adaptive_deriv_point corners[4]; 
+	struct deriv_point_adaptive corners[4]; 
 	for (int i = 0; i < 4; i++) {
 		corners[i].p = m[i].p;
 		corners[i].deriv = m[i].deriv;
@@ -61,55 +94,57 @@ vector<Triangle> *bPatch::adaptive_subdivide(float sub_size, struct deriv_point 
 	vector<Triangle> *finished = new vector<Triangle>();
 	vector<Triangle> *unfinished = new vector<Triangle>();
 	/*Make initial split of 2x2 deriv_pt into triangles*/
-	Triangle x = Triangle(corners + 2, corners + 3, corners);
-	Triangle y = Triangle(corners + 3, corners + 1, corners);
-	unfinished.push_back
+	Triangle x = Triangle(corners[2], corners[3], corners[0]);
+	Triangle y = Triangle(corners[3], corners[1], corners[0]);
+	unfinished->push_back(x);
+	unfinished->push_back(y);
 
 	for (int i = 0; i < unfinished->size(); i++) {
-		subdivide_triangle(&unfinished->at(i), finished);
+		subdivide_triangle(unfinished->at(i), eps, finished);
 	}
 	unfinished->~vector();
 	return finished;
-
-
 }
 
-void bPatch::subdivide_triangle(Triangle *tri, vector<Triangle> *finished){
+void bPatch::subdivide_triangle(Triangle tri, float epsilon, vector<Triangle> *finished){
 	unsigned char FLAG = 0;
-	struct adaptive_deriv_point temp;
+	struct deriv_point_adaptive temp;
+	struct deriv_point bez_temp;
 
 	//Determines which edges need to be split
-	tri->get_midpoint(1, &temp);
-	if ((temp.p - p_interp(temp.u, temp.v)).norm() > epsilon) FLAG | EDGE_1;
+	tri.get_midpoint(1, &temp);
+	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG | EDGE1;
 
-	tri->get_midpoint(2, &temp);
-	if ((temp.p - p_interp(temp.u, temp.v)).norm() > epsilon) FLAG | EDGE_2;
+	tri.get_midpoint(2, &temp);
+	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG | EDGE2;
 
-	tri->get_midpoint(3, &temp);
-	if ((temp.p - p_interp(temp.u, temp.v)).norm() > epsilon) FLAG | EDGE_3;
+	tri.get_midpoint(3, &temp);
+	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG | EDGE3;
 
 	//base case: triangle doesn't need to be split anymore, push onto finished list and return.
 	if (!FLAG) {
-		finished->push_back(*tri);
+		finished->push_back(tri);
 		return;
 	}
-	vector<Triangle> unfinished = new vector<Triangle>();
-	split_triangles(tri, unfinished, FLAG);
+	/*Otherwise recursively divide triangles with sub*/
+	vector<Triangle> *unfinished = new vector<Triangle>();
+	subdivide_triangle_helper(tri, unfinished, FLAG);
 	for (int i = 0; i < unfinished->size(); i++) {
-		subdivide_triangle(unfinished->at(i), finished);
+		subdivide_triangle(unfinished->at(i), epsilon, finished);
 	}
 	unfinished->~vector();
 }
 
 void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinished, unsigned char FLAG){
 	
-	switch (FLAG) {
-		case EDGE1 | EDGE2 | EDGE3:
-			struct adaptive_deriv_point E1_mid, E2_mid, E3_mid;
+switch (FLAG) {
+		 
+		case EDGE1 | EDGE2 | EDGE3: {
+			struct deriv_point_adaptive E1_mid, E2_mid, E3_mid;
 			
-			get_midpoint(1, E1_mid);
-			get_midpoint(2, E2_mid);
-			get_midpoint(3, E3_mid);
+			tri.get_midpoint(1, &E1_mid);
+			tri.get_midpoint(2, &E2_mid);
+			tri.get_midpoint(3, &E3_mid);
 
 			convert_midpoint(&E1_mid);
 			convert_midpoint(&E2_mid);
@@ -126,11 +161,12 @@ void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinishe
 			unfinished->push_back(z);
 			break;
 
-		case EDGE3 | EDGE1:
-			struct adaptive_deriv_point E1_mid, E3_mid;
+		} 
+		case EDGE3 | EDGE1: {
+			struct deriv_point_adaptive E1_mid, E3_mid;
 			
-			get_midpoint(1, E1_mid);
-			get_midpoint(3, E3_mid);
+			tri.get_midpoint(1, &E1_mid);
+			tri.get_midpoint(3, &E3_mid);
 
 			convert_midpoint(&E1_mid);
 			convert_midpoint(&E3_mid);
@@ -145,11 +181,12 @@ void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinishe
 			unfinished->push_back(z);
 			break;
 
-		case EDGE2 | EDGE3:
-			struct adaptive_deriv_point E2_mid, E3_mid;
+		} 
+		case EDGE2 | EDGE3: {
+			struct deriv_point_adaptive E2_mid, E3_mid;
 			
-			get_midpoint(2, E2_mid);
-			get_midpoint(3, E3_mid);
+			tri.get_midpoint(2, &E2_mid);
+			tri.get_midpoint(3, &E3_mid);
 
 			convert_midpoint(&E2_mid);
 			convert_midpoint(&E3_mid);
@@ -163,12 +200,13 @@ void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinishe
 			unfinished->push_back(z);
 			break;
 
-		case EDGE2 | EDGE1:
+		} 
+		case EDGE2 | EDGE1: {
 
-			struct adaptive_deriv_point E1_mid, E2_mid,
+			struct deriv_point_adaptive E1_mid, E2_mid;
 			
-			get_midpoint(1, E1_mid);
-			get_midpoint(2, E2_mid);
+			tri.get_midpoint(1, &E1_mid);
+			tri.get_midpoint(2, &E2_mid);
 
 
 			convert_midpoint(&E1_mid);
@@ -183,10 +221,11 @@ void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinishe
 			unfinished->push_back(z);
 			break;
 
-		case EDGE3:
-			struct adaptive_deriv_point E3_mid;
+		} 
+		case EDGE3: {
+			struct deriv_point_adaptive E3_mid;
 			
-			get_midpoint(3, E3_mid);
+			tri.get_midpoint(3, &E3_mid);
 
 			convert_midpoint(&E3_mid);
 
@@ -198,10 +237,11 @@ void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinishe
 			unfinished->push_back(y);
 			break;
 
-		case EDGE2:
-			struct adaptive_deriv_point E2_mid;
+		} 
+		case EDGE2: {
+			struct deriv_point_adaptive E2_mid;
 			
-			get_midpoint(2, E2_mid);
+			tri.get_midpoint(2, &E2_mid);
 
 			convert_midpoint(&E2_mid);
 
@@ -213,10 +253,11 @@ void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinishe
 			unfinished->push_back(y);
 			break;
 
-		case EDGE1:
-			struct adaptive_deriv_point E1_mid;
+		} 
+		case EDGE1: {
+			struct deriv_point_adaptive E1_mid;
 			
-			get_midpoint(1, E1_mid);
+			tri.get_midpoint(1, &E1_mid);
 
 			convert_midpoint(&E1_mid);
 
@@ -227,18 +268,20 @@ void bPatch::subdivide_triangle_helper(Triangle tri, vector<Triangle> *unfinishe
 			unfinished->push_back(x);
 			unfinished->push_back(y);
 			break;
-
-		default:
+		}
+		default: {
 			printf("Exception: flag does not match any valid value: %d", FLAG);
 			exit(0);
+		}
+
 	}
 }
 
-void bPatch::convert_midpoint(adaptive_deriv_point *mid){
+void bPatch::convert_midpoint(deriv_point_adaptive *mid){
 	struct deriv_point bez_mid;
 	p_interp(mid->u, mid->v, &bez_mid);
-	mid->deriv = bez_E1_mid.deriv;
-	mid->p = bez_E1_mid.p;
+	mid->deriv = bez_mid.deriv;
+	mid->p = bez_mid.p;
 }
 
 struct deriv_point *bPatch::p_interp(float u, float v, struct deriv_point *p_n) {
