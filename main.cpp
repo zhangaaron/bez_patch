@@ -8,7 +8,6 @@
 #include "poly_render.h" 
 #include "parser.h"
 #include "bezier.h"
-// #include "geometry.h"
 
 using namespace std;
 using namespace Eigen;

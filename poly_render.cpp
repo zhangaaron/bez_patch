@@ -116,8 +116,6 @@ void display_triangles()
 		}
 	glEnd();
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	glutSwapBuffers();
 }
 
@@ -156,7 +154,7 @@ void Motion(int x,int y)
 		if( Buttons[0] )
 		{
 			rotx += (float) 0.5f * diffy;
-			roty += (float) 0.5f * diffx;		
+			roty += (float) 0.5f * diffx;
 		}
 		else
 			if( Buttons[1] )
@@ -171,9 +169,30 @@ void MyKeyboardFunc(unsigned char Key, int x, int y){
 	switch(Key){
 		case 'w':
 			WIREFRAME ? WIREFRAME = 0: WIREFRAME =1;
+			break;
 		case 's':			
 			SMOOTH ? SMOOTH = 0: SMOOTH = 1;
-
+			break;
+		case 'i':
+			roty -= (float) 0.5f * 10;
+			break;
+		case 'j':
+			rotx += (float) 0.5f * 10;
+			break;
+		case 'k':
+			rotx -= (float) 0.5f * 10;
+			break;
+		case 'l':
+			roty += (float) 0.5f * 10;
+			break;
+		case 45: // zoom out
+			zoom += (float) 0.05f * 10;
+			break;
+		case 43: //zoom in
+			zoom -= (float) 0.05f * 10;
+			break;
+		default:
+			break;
 	}
 	glutPostRedisplay();
 }
