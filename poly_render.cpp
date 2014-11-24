@@ -1,7 +1,7 @@
 /*
-	Acknowledgements: Robert Bateman for 3d camera projection code. 
+	Acknowledgements: Robert Bateman for Motion function and Mouse function. 
 
-	References: GLProgramming.com for lighting and shading guide.
+	References: GLProgramming.com, opengl.org forums for lighting, shading, keyboard guide.
 */
 
 #include <iostream>
@@ -24,6 +24,7 @@ unsigned char Buttons[3] = {0};
 vector<Quad> *q_list;
 vector<Triangle> *t_list;
 int SMOOTH = 1;
+int WIREFRAME = 0;
 //-------------------------------------------------------------------------------
 /// \brief	Initialises the openGL scene
 /// 
@@ -50,6 +51,7 @@ void display()
 	if (SMOOTH) glShadeModel (GL_SMOOTH);
 	else glShadeModel(GL_FLAT);
 	if (WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	
 	glLoadIdentity();
@@ -84,6 +86,10 @@ void display()
 
 void display_triangles()
 {
+	if (SMOOTH) glShadeModel (GL_SMOOTH);
+	else glShadeModel(GL_FLAT);
+	if (WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	
 	glLoadIdentity();
@@ -161,8 +167,17 @@ void Motion(int x,int y)
 			glutPostRedisplay();
 }
 
-//-------------------------------------------------------------------------------
-//
+void MyKeyboardFunc(unsigned char Key, int x, int y){
+	switch(Key){
+		case 'w':
+			WIREFRAME ? WIREFRAME = 0: WIREFRAME =1;
+		case 's':			
+			SMOOTH ? SMOOTH = 0: SMOOTH = 1;
+
+	}
+	glutPostRedisplay();
+}
+
 void Mouse(int b,int s,int x,int y)
 {
 	lastx=x;
@@ -194,6 +209,7 @@ void run_glut(vector<Quad> *quad_list, int list_size, int MODE, int *argcp, char
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutMouseFunc(Mouse);
+	glutKeyboardFunc(MyKeyboardFunc);
 	glutMotionFunc(Motion);
 
 	init();
@@ -214,6 +230,7 @@ void run_glut_triangles(vector<Triangle> *triangle_list, int *argcp, char **argv
 	glutDisplayFunc(display_triangles);
 	glutReshapeFunc(reshape);
 	glutMouseFunc(Mouse);
+	glutKeyboardFunc(MyKeyboardFunc);
 	glutMotionFunc(Motion);
 
 	init();

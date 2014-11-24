@@ -51,14 +51,6 @@ void do_uniform(char **argv) {
 				int base = (j / num) * (num + 1) + j % num;
 				quad_list->push_back(Quad(patch_pts + base + num + 1, patch_pts + base,
 											patch_pts + base + 1, patch_pts + base + num + 2));
-				//printf("Patch no. %d subdivision: %d    ", i, j);
-				// printDeriv(patch_pts + base + num + 1);
-				// printDeriv(patch_pts + base);
-				// printDeriv(patch_pts + base + 1);
-				// printDeriv(patch_pts + base + num + 2);
-				//printf("\n");
-
-
 			}
 		}
 	//delete[] patch_list;
