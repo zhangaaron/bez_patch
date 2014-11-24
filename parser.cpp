@@ -28,31 +28,20 @@ void parse_file(char * file_name, vector<bPatch> *patch_list){
 	while (fgets(line, 200, fp) != NULL){ //Get next line with limit of 200 character lines until we hit the EOF. 
 		//printf("line is %s,%d", line, strlen(line));
 		if (strlen(line) > 2) {
-		char *value = strtok(line, " ");
+		char *value = strtok(line, " \r\n");
 			while (value){
-				// printf("at %s \n", value);
 				float_list.push_back(atof(value));
-				value = strtok(NULL, " ");
+				value = strtok(NULL, " \r\n");
 			}
 		}
 	}
 	for (int i = 0; i < float_list.size() / 48; i ++ ) {
-		Vector3f patch_pts[16];
+		vector<Vector3f> patch_pts;
 		for (int j = 0; j < 16; j++) { //form (x,y,z) pts from float_list
 			int start_i = i * 48 + j * 3;
-			//printf("pts: %f,%f,%f\n", float_list.at(start_i),float_list.at(start_i + 1), float_list.at(start_i + 2));
-			patch_pts[j] = Vector3f(float_list.at(start_i),float_list.at(start_i + 1), float_list.at(start_i + 2)); 
+			patch_pts.push_back(Vector3f(float_list.at(start_i),float_list.at(start_i + 1), float_list.at(start_i + 2)));
 		}
 		patch_list->push_back(bPatch(patch_pts));
+		patch_pts.clear();
 	}
-
-
 }
-
-// Patch::to_String() {
-// 	for (int i = 0; i < 4; i++){
-// 		for (int j = 0; j < 4; j++) {
-// 			printf()
-// 		}
-// 	}
-// }

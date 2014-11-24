@@ -16,6 +16,8 @@ int MODE;
 
 
 int main(int argc, char *argv[]) {
+
+
 	if (argc == 4) MODE = 1; //Use adaptive.
 	float subdivision_size = atof(argv[2]);
 	float num_steps = floor (1/ subdivision_size);
@@ -24,30 +26,31 @@ int main(int argc, char *argv[]) {
 	subdivision_size = 1 / num_steps; //so we get subdivision size.
 	vector<bPatch> *patch_list = new vector<bPatch>();
 	parse_file(argv[1], patch_list);
+
+
 	printf("subdivision size: %f, number of patches: %d\n", subdivision_size, patch_list->size());
-	if (MODE) { //Do adapative tesselation
-		// for(int i = 0; i < patch_list->size(); i++) {
-		// 	patch_list->at(i).subdivide_patch(subdivision_size, v_array + num * num * i);
-		// }
-	}
-	else { //WILL BREAK FOR TOO SMALL NUM = 1
+	printf("num: %d\n", num);
 		int patch_count = patch_list->size();
-		Quad *quad_list = (Quad *)malloc(sizeof(Quad) *  patch_count * numsq); 
+		vector<Quad> *quad_list = new vector<Quad>();
 		for(int i = 0; i < patch_count; i++) {
-			struct deriv_point patch_pts[numsq + 2 * num ]; //fill up a numsq size array of 
+			struct deriv_point patch_pts[(num + 1) * (num + 1)]; //fill up a num + 1 ^2 array of pts. from a single patch
 			patch_list->at(i).subdivide_patch(subdivision_size, patch_pts);
 			for (int j = 0; j < numsq ; j++) {
-				Quad *quad_base_ptr = quad_list + i * numsq;
-				quad_base_ptr[j].verts[0]  = patch_pts[j].p;
-				quad_base_ptr[j].verts[1]  = patch_pts[j + 1].p;
-				quad_base_ptr[j].verts[2]  = patch_pts[num + j].p;
-				quad_base_ptr[j].verts[3]  = patch_pts[num + j + 1].p;
+				int base = (j / num) * (num + 1) + j % num;
+				quad_list->push_back(Quad(patch_pts + base + num + 1, patch_pts + base,
+											patch_pts + base + 1, patch_pts + base + num + 2));
+				//printf("Patch no. %d subdivision: %d    ", i, j);
+				// printDeriv(patch_pts + base + num + 1);
+				// printDeriv(patch_pts + base);
+				// printDeriv(patch_pts + base + 1);
+				// printDeriv(patch_pts + base + num + 2);
+				//printf("\n");
+
+
 			}
 		}
-		delete[] patch_list; //free memory occupied by patch_list
-		run_glut(quad_list, patch_count * numsq, MODE, &argc, argv);
-	}
+	//delete[] patch_list;
+	run_glut(quad_list, quad_list->size(), MODE, &argc, argv);
 
-	// run_glut(, &argc, argv);
 	return 0;
 }
