@@ -22,6 +22,8 @@ int lastx=0;
 int lasty=0;
 unsigned char Buttons[3] = {0};
 vector<Quad> *q_list;
+vector<Triangle> *t_list;
+int SMOOTH = 1;
 //-------------------------------------------------------------------------------
 /// \brief	Initialises the openGL scene
 /// 
@@ -31,7 +33,7 @@ void init()
 	GLfloat mat_shininess[] = { 50.0 };
 	GLfloat light_position[] = {0, 3, 0, 0.0 };
 	glClearColor (0.0, 0.0, 0.0, 0.0);
-	glShadeModel (GL_SMOOTH);
+
 
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
@@ -45,6 +47,9 @@ void init()
 
 void display()
 {
+	if (SMOOTH) glShadeModel (GL_SMOOTH);
+	else glShadeModel(GL_FLAT);
+	if (WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	
 	glLoadIdentity();
@@ -54,18 +59,7 @@ void display()
 	glRotatef(rotx,1,0,0);
 	glRotatef(roty,0,1,0);
 	glEnable(GL_NORMALIZE);
-	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
-	// draw grid
-	glBegin(GL_LINES);
-	for(int i=-10;i<=10;++i) {
-		glVertex3f(i,0,-10);
-		glVertex3f(i,0,10);
-
-		glVertex3f(10,0,i);
-		glVertex3f(-10,0,i);
-	}
-	glEnd();
 
 	glBegin(GL_QUADS); //q_list->size()
 		for (int i = 0; i < q_list->size(); i++) {
@@ -77,7 +71,6 @@ void display()
 			glVertex3f(quad_to_draw.b.p[0], quad_to_draw.b.p[1], quad_to_draw.b.p[2]);
 
 			glNormal3f(quad_to_draw.c.deriv[0], quad_to_draw.c.deriv[1], quad_to_draw.c.deriv[2]);
-
 			glVertex3f(quad_to_draw.c.p[0], quad_to_draw.c.p[1], quad_to_draw.c.p[2]);
 
 			glNormal3f(quad_to_draw.d.deriv[0], quad_to_draw.d.deriv[1], quad_to_draw.d.deriv[2]);
@@ -85,7 +78,39 @@ void display()
 		}
 	glEnd();
 
-	// /glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glutSwapBuffers();
+}
+
+void display_triangles()
+{
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	
+	glLoadIdentity();
+
+	glTranslatef(0,0,-zoom);
+	glTranslatef(tx,ty,0);
+	glRotatef(rotx,1,0,0);
+	glRotatef(roty,0,1,0);
+	glEnable(GL_NORMALIZE);
+
+
+	glBegin(GL_TRIANGLES); //q_list->size()
+		for (int i = 0; i < t_list->size(); i++) {
+			Triangle triangle_to_draw = t_list->at(i);
+			glNormal3f(triangle_to_draw.a.deriv[0], triangle_to_draw.a.deriv[1], triangle_to_draw.a.deriv[2]);
+			glVertex3f(triangle_to_draw.a.p[0], triangle_to_draw.a.p[1], triangle_to_draw.a.p[2]);
+
+			glNormal3f(triangle_to_draw.b.deriv[0], triangle_to_draw.b.deriv[1], triangle_to_draw.b.deriv[2]);
+			glVertex3f(triangle_to_draw.b.p[0], triangle_to_draw.b.p[1], triangle_to_draw.b.p[2]);
+
+			glNormal3f(triangle_to_draw.c.deriv[0], triangle_to_draw.c.deriv[1], triangle_to_draw.c.deriv[2]);
+			glVertex3f(triangle_to_draw.c.p[0], triangle_to_draw.c.p[1], triangle_to_draw.c.p[2]);
+
+		}
+	glEnd();
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glutSwapBuffers();
 }
@@ -177,6 +202,27 @@ void run_glut(vector<Quad> *quad_list, int list_size, int MODE, int *argcp, char
 
 
 }
+
+void run_glut_triangles(vector<Triangle> *triangle_list, int *argcp, char **argv){
+	glutInit(argcp,argv);
+	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
+	glutInitWindowSize(640,480);
+	glutInitWindowPosition(100,100);
+	glutCreateWindow("basicBezier v4.20");
+
+	t_list = triangle_list;
+	glutDisplayFunc(display_triangles);
+	glutReshapeFunc(reshape);
+	glutMouseFunc(Mouse);
+	glutMotionFunc(Motion);
+
+	init();
+
+	glutMainLoop();
+
+
+}
+
 
 
 Quad::Quad(struct deriv_point *a, struct deriv_point *b, struct deriv_point *c, struct deriv_point *d) {

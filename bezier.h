@@ -60,9 +60,7 @@ class bPatch {
 		bPatch(vector<Vector3f> input_pts);
 		// to_String(); //for debug
 		struct deriv_point *subdivide_patch(float sub_size, struct deriv_point *d_array);
-		
-
-		vector<Triangle> *adaptive_subdivide(float sub_size, float eps, struct deriv_point *d_array);
+		vector<Triangle> *adaptive_subdivide(float eps);
 		void subdivide_triangle(Triangle tri, float epsilon, vector<Triangle> *finished);
 		void subdivide_triangle_helper(Triangle tri,vector<Triangle> *unfinished, unsigned char FLAG);
 		void convert_midpoint(deriv_point_adaptive *mid);

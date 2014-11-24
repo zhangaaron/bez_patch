@@ -1,7 +1,6 @@
 /*
 	Reads from patch data to return a list of points.  
 */
-#pragma once
 
 #include <vector>
 #include <iostream>
@@ -23,7 +22,6 @@ void parse_file(char * file_name, vector<bPatch> *patch_list){
 	char line[200];
 	fgets(line, 200, fp);
 	vector<Vector3f> patch_pts_temp; //keeps track of a list of 16 Vector3f patch points that we supply to patch constructor
-	int num_pts = 0;
 	vector<float> float_list;
 	while (fgets(line, 200, fp) != NULL){ //Get next line with limit of 200 character lines until we hit the EOF. 
 		//printf("line is %s,%d", line, strlen(line));

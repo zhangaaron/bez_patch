@@ -14,11 +14,24 @@ using namespace std;
 using namespace Eigen;
 int MODE;
 
+void do_adaptive(char **argv) {
+	float epsilon = atof(argv[2]);
+	vector<bPatch> *patch_list = new vector<bPatch>();
+	parse_file(argv[1], patch_list);
+	printf("epsilon size: %f, number of patches: %d\n", epsilon, patch_list->size());
+	vector<Triangle> *triangle_list = new vector<Triangle>();
+	triangle_list->reserve(3200);
+	for (int i = 0; i < patch_list->size(); i ++){
+		vector<Triangle> *patch_triangles = patch_list->at(i).adaptive_subdivide(epsilon);
+		triangle_list->insert(triangle_list->end(), patch_triangles->begin(), patch_triangles->end());
+		patch_triangles->~vector();
+	}
+	int argc = 0; //hack
+	run_glut_triangles(triangle_list, &argc, argv);
+}
 
-int main(int argc, char *argv[]) {
 
-
-	if (argc == 4) MODE = 1; //Use adaptive.
+void do_uniform(char **argv) {
 	float subdivision_size = atof(argv[2]);
 	float num_steps = floor (1/ subdivision_size);
 	int num = (int) num_steps; //for array indexing
@@ -26,7 +39,6 @@ int main(int argc, char *argv[]) {
 	subdivision_size = 1 / num_steps; //so we get subdivision size.
 	vector<bPatch> *patch_list = new vector<bPatch>();
 	parse_file(argv[1], patch_list);
-
 
 	printf("subdivision size: %f, number of patches: %d\n", subdivision_size, patch_list->size());
 	printf("num: %d\n", num);
@@ -50,7 +62,19 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	//delete[] patch_list;
+	int argc = 0; //hack
 	run_glut(quad_list, quad_list->size(), MODE, &argc, argv);
 
+}
+int main(int argc, char *argv[]) {
+
+
+	if (argc == 4)  { //Use adaptive.
+
+		do_adaptive(argv);
+	}
+	else {
+		do_uniform(argv);
+	}
 	return 0;
 }

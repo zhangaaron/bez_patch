@@ -79,7 +79,7 @@ struct deriv_point *bPatch::subdivide_patch(float sub_size, struct deriv_point *
 }
 
 //Don't know how large this is so use a vector
-vector<Triangle> *bPatch::adaptive_subdivide(float sub_size, float eps, struct deriv_point *d_array) {
+vector<Triangle> *bPatch::adaptive_subdivide(float eps) {
 	struct deriv_point m[4];
 	subdivide_patch(1.0, m);
 	struct deriv_point_adaptive corners[4]; 
@@ -113,13 +113,13 @@ void bPatch::subdivide_triangle(Triangle tri, float epsilon, vector<Triangle> *f
 
 	//Determines which edges need to be split
 	tri.get_midpoint(1, &temp);
-	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG | EDGE1;
+	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG |= EDGE1;
 
 	tri.get_midpoint(2, &temp);
-	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG | EDGE2;
+	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG |= EDGE2;
 
 	tri.get_midpoint(3, &temp);
-	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG | EDGE3;
+	if ((temp.p - p_interp(temp.u, temp.v, &bez_temp)->p).norm() > epsilon) FLAG |= EDGE3;
 
 	//base case: triangle doesn't need to be split anymore, push onto finished list and return.
 	if (!FLAG) {

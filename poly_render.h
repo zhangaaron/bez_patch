@@ -44,3 +44,4 @@ class Quad: public Shape {
 };
 void display();
 void run_glut(vector<Quad> *quad_list, int list_size, int MODE, int *argcp, char **argv);
+void run_glut_triangles(vector<Triangle> *triangle_list, int *argcp, char **argv);
